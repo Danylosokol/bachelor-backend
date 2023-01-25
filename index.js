@@ -6,7 +6,8 @@ const admin = require("firebase-admin");
 const { getAuth } = require("firebase-admin/auth");
 const {createOrganization, findUserInOrganizations, getUsersInOrganization, addUserToOrganization} = require("./database/organization");
 const {createUser, updateUser, deleteUser} = require("./database/user");
-const {getCompanyProjects, createProject, updateProject, deleteProject} = require("./database/project");
+const {getCompanyProjects, getUserProjects, createProject, updateProject, deleteProject} = require("./database/project");
+const {getAllUserReports, getLastUserReport, createPersonalReport, updatePersonalReport, deletePersonalReport} = require("./database/personal-report")
 
 var serviceAccount = require("./firebaseAccountKey.json");
 
@@ -86,8 +87,8 @@ app.delete("/api/user", async (req, res) => {
 });
 
 app.get("/api/project", async (req, res) => {
-  const organizationId = req.query.organization;
-  if (organizationId) {
+  if (req.query.organization) {
+    const organizationId = req.query.organization;
     const result = await getCompanyProjects(organizationId);
     console.log(result);
     res.status(200).json(result).end();
@@ -112,6 +113,50 @@ app.delete("/api/project", async (req, res) => {
   const projectId = req.query.id;
   const result = await deleteProject(projectId);
   res.status(200).json(result).end();
+});
+
+app.get("/api/person-reports", async (req, res) => {
+  if(req.query.userId){
+    const userId = req.query.userId;
+    console.log(userId);
+    const result = await getAllUserReports(userId);
+    console.log(result);
+    res.status(200).json(result).end();
+  }
+})
+
+app.post("/api/person-report", async (req, res) => {
+  const newReport = req.body;
+  console.log(newReport);
+  const result = await createPersonalReport(newReport);
+  res.status(200).json(result).end();
+})
+
+app.put("/api/person-report", async (req, res) => {
+  const updatedReport = req.body;
+  const result = await updatePersonalReport(updatedReport);
+  console.log(result);
+  res.status(200).json(result).end();
+});
+
+app.delete("/api/person-report", async (req, res) => {
+  const reportId = req.query.reportId;
+  console.log(reportId);
+  const result = await deletePersonalReport(reportId);
+  res.status(200).json(result).end();
+})
+
+app.get("/api/projects-tasks", async (req, res) => {
+  if (req.query.user) {
+    const userId = req.query.user;
+    const projects = await getUserProjects(userId);
+    const lastReport = await getLastUserReport(userId);
+    const planedTasks = lastReport.tasks.filter((task) => task.status === "toDo");
+    res.status(200).json({
+      projects: projects,
+      planedTasks: planedTasks
+    }).end();
+  }
 });
 
 const PORT = process.env.PORT || 8080;

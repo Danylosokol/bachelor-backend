@@ -15,6 +15,10 @@ const getCompanyProjects = async (organisationId) => {
   return Project.find({ "organization": organisationId }).populate("members").exec();
 };
 
+const getUserProjects = async (userId) => {
+  return Project.find({"members": userId}).exec();
+}
+
 const createProject = async (data) => {
   const project = new Project({
     _id: new mongoose.Types.ObjectId(),
@@ -37,12 +41,13 @@ const updateProject = async (data) => {
   return Project.findByIdAndUpdate(data._id, updatedProject).exec();
 };
 
-const deleteProject = async (id) => {
-  return Project.findByIdAndDelete(id);
+const deleteProject = async (projectId) => {
+  return Project.findByIdAndDelete(projectId);
 };
 
 module.exports = {
   getCompanyProjects,
+  getUserProjects,
   createProject,
   updateProject,
   deleteProject,

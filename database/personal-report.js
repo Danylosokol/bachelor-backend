@@ -32,6 +32,18 @@ const createPersonalReport = async (data) => {
   return personalReport.save();
 };
 
+const createNewPersonalReport = async (data) => {
+  console.log(data.tasks);
+  const personalReport = new PersonalReport({
+    _id: new mongoose.Types.ObjectId(),
+    date: new Date(),
+    user: data.user,
+    organization: data.organization,
+    feedbacks: [...data.feedbacks],
+  });
+  return personalReport.save();
+};
+
 const updatePersonalReport = async (data) => {
   const updatedReport = {
     user: data.user,

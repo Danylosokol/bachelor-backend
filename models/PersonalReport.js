@@ -20,7 +20,7 @@ const personReportSchema = new Schema(
     }],
   },
   {
-    collection: "report",
+    collection: "personal-reports",
   }
 );
 

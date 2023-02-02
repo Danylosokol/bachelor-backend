@@ -13,11 +13,26 @@ const getAllUserReports = async (userId) => {
   return PersonalReport.find({ user: userId }).populate({path: "tasks.project"}).exec();
 };
 
+const getAllNewUserReports = async (userId) => {
+  return PersonalReport.find({ user: userId })
+    .populate({ path: "feedbacks.card" })
+    .populate({ path: "feedbacks.project" })
+    .sort({ date: -1 })
+    .exec();
+}
+
 const getLastUserReport = async (userId) => {
   return PersonalReport.findOne({ user: userId })
     .sort({ date: -1 })
     .populate({ path: "tasks.project" })
     .exec();
+}
+// Get from collection last personal report based on userId, and from that report extract only array of feedbacks and filter that array so it will have only objects that has no atribute card.
+const getPlanedCustomFeedbacks = async (userId) => {
+  const lastReport = await PersonalReport.findOne({user: userId}).sort({date: -1});
+  // feedbacks with null cards are not custom, but their card was deleted after feedback creation
+  const customFeedbacks = lastReport && lastReport.feedbacks ? lastReport.feedbacks.filter((feedback) => feedback.card === undefined && feedback.type === "planed") : [];
+  return customFeedbacks
 }
 
 const createPersonalReport = async (data) => {
@@ -33,7 +48,6 @@ const createPersonalReport = async (data) => {
 };
 
 const createNewPersonalReport = async (data) => {
-  console.log(data.tasks);
   const personalReport = new PersonalReport({
     _id: new mongoose.Types.ObjectId(),
     date: new Date(),
@@ -53,14 +67,28 @@ const updatePersonalReport = async (data) => {
   return PersonalReport.findByIdAndUpdate(data._id, updatedReport).exec();
 }
 
+const updateNewPersonalReport = async (data) => {
+  const updatedReport = {
+    user: data.user,
+    organization: data.organization,
+    feedbacks: [...data.feedbacks],
+  };
+  return PersonalReport.findByIdAndUpdate(data._id, updatedReport).exec();
+};
+
+
 const deletePersonalReport = async (reportId) => {
   return PersonalReport.findByIdAndDelete(reportId);
 }
 
 module.exports = {
   getAllUserReports,
+  getAllNewUserReports,
   getLastUserReport,
+  getPlanedCustomFeedbacks,
   createPersonalReport,
+  createNewPersonalReport,
   updatePersonalReport,
+  updateNewPersonalReport,
   deletePersonalReport,
 };

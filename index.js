@@ -7,7 +7,7 @@ const { getAuth } = require("firebase-admin/auth");
 const {createOrganization, findUserInOrganizations, getUsersInOrganization, addUserToOrganization} = require("./database/organization");
 const {createUser, updateUser, deleteUser} = require("./database/user");
 const {getCompanyProjects, getUserProjects, getUsersInProject, createProject, updateProject, deleteProject} = require("./database/project");
-const {getAllUserReports, getLastUserReport, createPersonalReport, updatePersonalReport, deletePersonalReport} = require("./database/personal-report");
+const {getAllUserReports, getAllNewUserReports, getLastUserReport, getPlanedCustomFeedbacks, createPersonalReport, createNewPersonalReport, updatePersonalReport, updateNewPersonalReport, deletePersonalReport} = require("./database/personal-report");
 const {getAllProjectCards, getAllCurrentUserCards, getAllUserCardsForTommorow, createCard, updateCard, deleteCard} = require("./database/card");
 
 var serviceAccount = require("./firebaseAccountKey.json");
@@ -102,6 +102,10 @@ app.get("/api/project", async (req, res) => {
     const result = await getCompanyProjects(organizationId);
     console.log(result);
     res.status(200).json(result).end();
+  }else if(req.query.userId){
+    const userId = req.query.userId;
+    const result = await getUserProjects(userId);
+    res.status(200).json(result).end();
   }
   res.status(500).end();
 });
@@ -135,6 +139,16 @@ app.get("/api/person-reports", async (req, res) => {
   }
 })
 
+app.get("/api/new-person-reports", async (req, res) => {
+  if (req.query.userId) {
+    const userId = req.query.userId;
+    console.log(userId);
+    const result = await getAllNewUserReports(userId);
+    console.log(result);
+    res.status(200).json(result).end();
+  }
+});
+
 app.post("/api/person-report", async (req, res) => {
   const newReport = req.body;
   console.log(newReport);
@@ -152,6 +166,13 @@ app.post("/api/new-person-report", async (req, res) => {
 app.put("/api/person-report", async (req, res) => {
   const updatedReport = req.body;
   const result = await updatePersonalReport(updatedReport);
+  console.log(result);
+  res.status(200).json(result).end();
+});
+
+app.put("/api/new-person-report", async (req, res) => {
+  const updatedReport = req.body;
+  const result = await updateNewPersonalReport(updatedReport);
   console.log(result);
   res.status(200).json(result).end();
 });
@@ -187,8 +208,8 @@ app.get("/api/cards", async (req, res) => {
     const date = req.query.date;
     const currentCards = await getAllCurrentUserCards(userId, date);
     const planedCards = await getAllUserCardsForTommorow(userId, date);
-    console.log(planedCards);
-    res.status(200).json({"currentCards": currentCards, "planedCards": planedCards}).end();
+    const planedCustomFeedbacks = await getPlanedCustomFeedbacks(userId);
+    res.status(200).json({"currentCards": currentCards, "planedCards": planedCards, "planedCustomFeedbacks": planedCustomFeedbacks}).end();
   }
   res.status(500).end();
 })

@@ -207,7 +207,9 @@ app.get("/api/cards", async (req, res) => {
     const userId = req.query.userId;
     const date = req.query.date;
     const currentCards = await getAllCurrentUserCards(userId, date);
+    console.log(currentCards);
     const planedCards = await getAllUserCardsForTommorow(userId, date);
+    console.log(planedCards);
     const planedCustomFeedbacks = await getPlanedCustomFeedbacks(userId);
     res.status(200).json({"currentCards": currentCards, "planedCards": planedCards, "planedCustomFeedbacks": planedCustomFeedbacks}).end();
   }

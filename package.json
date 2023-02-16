@@ -18,6 +18,7 @@
     "firebase-admin": "^11.5.0",
     "mongoose": "^6.8.4",
     "natural": "^6.1.4",
+    "node-summary": "^1.2.0",
     "nodemon": "^2.0.20"
   }
 }

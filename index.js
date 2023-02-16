@@ -7,8 +7,10 @@ const { getAuth } = require("firebase-admin/auth");
 const {createOrganization, findUserInOrganizations, getUsersInOrganization, addUserToOrganization} = require("./database/organization");
 const {createUser, updateUser, deleteUser} = require("./database/user");
 const {getCompanyProjects, getUserProjects, getUsersInProject, createProject, updateProject, deleteProject} = require("./database/project");
-const {getAllUserReports, getAllNewUserReports, getLastUserReport, getPlanedCustomFeedbacks, createPersonalReport, createNewPersonalReport, updatePersonalReport, updateNewPersonalReport, deletePersonalReport} = require("./database/personal-report");
-const {getAllProjectCards, getAllCurrentUserCards, getAllUserCardsForTommorow, createCard, updateCard, deleteCard} = require("./database/card");
+const {getAllNewUserReports, getLastUserReport, getPlanedCustomFeedbacks, createPersonalReport, createNewPersonalReport, updatePersonalReport, updateNewPersonalReport, deletePersonalReport} = require("./database/personal-report");
+const {getAllProjectCards, getAllCurrentUserCards, getAllUserCardsForTommorow, getCurrentCardsAndFeedbacks, getPlanedProjectCards, createCard, updateCard, deleteCard} = require("./database/card");
+const {getAllProjectReports, getAllOrganizationReports, createProjectReport, updateProjectReport, deleteProjectReport} = require("./database/project-report.js");
+const {personReportsToFeedbacks} = require("./database/transformations.js");
 
 var serviceAccount = require("./firebaseAccountKey.json");
 const { json } = require("body-parser");
@@ -129,16 +131,6 @@ app.delete("/api/project", async (req, res) => {
   res.status(200).json(result).end();
 });
 
-app.get("/api/person-reports", async (req, res) => {
-  if(req.query.userId){
-    const userId = req.query.userId;
-    console.log(userId);
-    const result = await getAllUserReports(userId);
-    console.log(result);
-    res.status(200).json(result).end();
-  }
-})
-
 app.get("/api/new-person-reports", async (req, res) => {
   if (req.query.userId) {
     const userId = req.query.userId;
@@ -182,7 +174,7 @@ app.delete("/api/person-report", async (req, res) => {
   console.log(reportId);
   const result = await deletePersonalReport(reportId);
   res.status(200).json(result).end();
-})
+});
 
 app.get("/api/projects-tasks", async (req, res) => {
   if (req.query.user) {
@@ -238,6 +230,51 @@ app.delete("/api/card", async (req, res) => {
   const result = await deleteCard(cardId);
   const updatedCards = await getAllProjectCards(projectId);
   res.status(200).json(updatedCards).end();
+});
+
+app.get("/api/project-reports", async (req, res) => {
+  const projectId = req.query.projectId;
+  if(projectId === 'all'){
+    const organizationId = req.query.organizationId;
+    const result = await getAllOrganizationReports(organizationId);
+    res.status(200).json(result).end();
+  }else{
+    const result = await getAllProjectReports(projectId);
+    console.log(result);
+    res.status(200).json(result).end();
+  }
+})
+
+app.get("/api/project-reports/cards-feedbacks", async (req, res) => {
+  const startDay = new Date(parseInt(req.query.startDay));
+  const endDay = new Date(parseInt(req.query.endDay));
+  const projectId = req.query.projectId;
+  console.log("getting cards and feedbacks");
+  const queryResult = await getCurrentCardsAndFeedbacks(startDay, endDay, projectId);
+  const currentCards = personReportsToFeedbacks(queryResult);
+  const planedCards = await getPlanedProjectCards(endDay, projectId);
+  res.status(200).json({
+    currentCards: currentCards,
+    planedCards: planedCards
+  }).end();
+})
+
+app.post("/api/project-report", async (req, res) => {
+  const newReport = req.body;
+  const result = await createProjectReport(newReport);
+  res.status(200).json(result).end();
+});
+
+app.put("/api/project-report", async (req, res) => {
+  const newReport = req.body;
+  const result = await updateProjectReport(newReport);
+  res.status(200).json(result).end();
+});
+
+app.delete("/api/project-report", async (req, res) => {
+  const reportId = req.query.reportId;
+  const result = await deleteProjectReport(reportId);
+  res.status(200).json(result).end();
 });
 
 const PORT = process.env.PORT || 8080;

@@ -9,9 +9,9 @@ mongoose.connect(process.env["MONGO_URI"], {
   dbName: "bachelor-project",
 });
 
-const getAllUserReports = async (userId) => {
-  return PersonalReport.find({ user: userId }).populate({path: "tasks.project"}).exec();
-};
+// const getAllUserReports = async (userId) => {
+//   return PersonalReport.find({ user: userId }).populate({path: "tasks.project"}).exec();
+// };
 
 const getAllNewUserReports = async (userId) => {
   return PersonalReport.find({ user: userId })
@@ -82,7 +82,6 @@ const deletePersonalReport = async (reportId) => {
 }
 
 module.exports = {
-  getAllUserReports,
   getAllNewUserReports,
   getLastUserReport,
   getPlanedCustomFeedbacks,

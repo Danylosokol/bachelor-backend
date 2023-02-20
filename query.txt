@@ -1,0 +1,70 @@
+that is my keywords.json:
+{
+  "keywords": [
+    "follow(ed)?\\s+up",
+    "work(ed)?\\s+on",
+    "Create(d)?",
+    "sen(d|t)?",
+    "had(\\s+a)?\\s+call\\s+with",
+    "put\\s+together",
+    "coordinate(d)?",
+    "add(ed)?",
+    "reachs*out(s)?",
+    "responses\\+rate",
+    "review(ed)?(\\s+out)?",
+    "(gave)|(give).+(a|an)?",
+    "arrange(d)?",
+    "aligne(d)?(\\s+with)?",
+    "explain(ed)",
+    "set\\s+up",
+    "subscribe(d)?",
+    "found",
+    "(wrote)|(ve\\s+written)",
+    "tr((y)|(ied))( to find)?",
+    "went\\s+over",
+    "((offer)|(interview)|(call))"
+  ],
+  "options": "gmi"
+}
+
+and that is my code:
+
+const examples = [
+  {
+    name: "Ruslan Bober",
+    data: new Date("2023-02-02"),
+    feedback: `Had calls with two candidates. First one is waiting for performance review, the second one is not confident in passing tech part.`,
+  },
+];
+
+const fileContent = fs.readFileSync("keywords.json");
+const keywords = JSON.parse(fileContent);
+
+
+const sentenceTokenizer = new SentenceTokenizer();
+const regexes = keywords.keywords.map((keyword) => new RegExp(keyword, keywords.options));
+
+for (let i in examples) {
+  let summarization = ``;
+  const sentences = sentenceTokenizer.tokenize(examples[i]["feedback"]);
+  sentences.forEach((sentence) => {
+    for (let j in regexes) {
+      if (regexes[j].test(sentence)) {
+        summarization += ` ${sentence}`;
+        return;
+      }
+    }
+  });
+  if(summarization.length > 0){
+    summarization =
+      summarization.trim() +
+      ` - by ${examples[i]["name"]} ${moment(examples[i]["date"]).format(
+        "DD-MM-YYYY"
+      )}`;
+  }else{
+    summarization = examples[i]["feedback"];
+    console.log("SUMMARIZATION WAS EMPTY");
+  }
+  console.log(summarization);
+  console.log("");
+}

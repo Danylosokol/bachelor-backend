@@ -1,0 +1,27 @@
+{
+  "keywords": [
+    "follow(ed)?\\s+up",
+    "work(ed)?\\s+on",
+    "Create(d)?",
+    "sen(d|t)?",
+    "had(\\s+a)?\\s+call\\s+with",
+    "put\\s+together",
+    "coordinate(d)?",
+    "add(ed)?",
+    "reachs*out(s)?",
+    "responses\\+rate",
+    "review(ed)?(\\s+out)?",
+    "(gave)|(give).+(a|an)?",
+    "arrange(d)?",
+    "aligne(d)?(\\s+with)?",
+    "explain(ed)",
+    "set\\s+up",
+    "subscribe(d)?",
+    "found",
+    "(wrote)|(ve\\s+written)",
+    "tr((y)|(ied))( to find)?",
+    "went\\s+over",
+    "((offer(s)?)|(interview(s)?)|(call(s)?))"
+  ],
+  "options": "gmi"
+}

@@ -16,7 +16,6 @@ const getAllProjectReports = async (projectId) => {
     .populate({ path: "resultCards.card", model: "Card"})
     .populate({ path: "planedCards" })
     .populate({ path: "resultCards.feedbacks.createdBy" })
-    .populate({ path: "resultCards.feedbacks.report" })
     .sort({ date: -1 })
     .exec();
 };

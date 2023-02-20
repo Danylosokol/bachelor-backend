@@ -210,6 +210,7 @@ app.get("/api/cards", async (req, res) => {
 
 app.post("/api/card", async (req, res) => {
   const newCard = req.body;
+  console.log(newCard);
   const result = await createCard(newCard);
   const projectId = newCard.project;
   const updatedCards = await getAllProjectCards(projectId);

@@ -13,6 +13,11 @@ const cardSchema = new Schema(
         title: { type: String },
       },
     ],
+    templates: [{
+      name: {type: String},
+      type: {type: String},
+      action: {type: String},
+    }],
     startDay: { type: Date },
     deadline: { type: Date },
     type: { type: String },

@@ -12,6 +12,12 @@ const projectReportSchema = new Schema(
       {
         card: { type: mongoose.Schema.Types.ObjectId, ref: "Card" },
         result: { type: String },
+        links: [
+          {
+            url: {type: String},
+            title: {type: String},
+          }
+        ],
         feedbacks: [
           {
             id: { type: String },

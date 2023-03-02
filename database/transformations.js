@@ -15,8 +15,7 @@ const personReportsToFeedbacks = (cards) => {
     delete card.personalReports;
     return card;
   });
-  console.log(result);
-  // console.log(cards);
+  // console.log(result);
   return cards;
 }
 

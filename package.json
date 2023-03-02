@@ -13,6 +13,7 @@
     "axios": "^1.3.3",
     "body-parser": "^1.20.1",
     "cohere-ai": "^5.0.2",
+    "compromise": "^14.8.2",
     "cors": "^2.8.5",
     "cosine": "^0.0.1",
     "dotenv": "^16.0.3",
@@ -23,6 +24,7 @@
     "natural": "^6.2.0",
     "node-summary": "github:TroniPM/node-summary",
     "nodemon": "^2.0.20",
-    "openai": "^3.1.0"
+    "openai": "^3.1.0",
+    "spelling": "^2.0.2"
   }
 }

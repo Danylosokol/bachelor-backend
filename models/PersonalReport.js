@@ -9,7 +9,7 @@ const personReportSchema = new Schema(
     organization: { type: mongoose.Schema.Types.ObjectId, ref: "Organization" },
     feedbacks: [
       {
-        id: {type: String},
+        id: { type: String },
         card: { type: mongoose.Schema.Types.ObjectId, ref: "Card" },
         name: { type: String },
         description: { type: String },
@@ -18,6 +18,14 @@ const personReportSchema = new Schema(
           {
             url: { type: String },
             title: { type: String },
+          },
+        ],
+        templates: [
+          {
+            name: { type: String },
+            type: { type: String },
+            action: { type: String },
+            feedback: {type: String},
           },
         ],
         project: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },

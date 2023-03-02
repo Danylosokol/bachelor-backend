@@ -11,9 +11,12 @@ const {getAllNewUserReports, getLastUserReport, getPlanedCustomFeedbacks, create
 const {getAllProjectCards, getAllCurrentUserCards, getAllUserCardsForTommorow, getCurrentCardsAndFeedbacks, getPlanedProjectCards, createCard, updateCard, deleteCard} = require("./database/card");
 const {getAllProjectReports, getAllOrganizationReports, createProjectReport, updateProjectReport, deleteProjectReport} = require("./database/project-report.js");
 const {personReportsToFeedbacks} = require("./database/transformations.js");
+const {summarization} = require("./nlp/summarization.js");
+const {createRegexes} = require("./nlp/keywords.js");
 
 var serviceAccount = require("./firebaseAccountKey.json");
 const { json } = require("body-parser");
+const { getAllKeywords, updateKeywords, createKeywords } = require("./database/keyword");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -58,7 +61,12 @@ app.post("/api/organization", async (req, res) => {
     name: name,
     members: memebers,
   };
-  await createOrganization(newOrganization);
+  const organization = await createOrganization(newOrganization);
+  const emptyKeywords = {
+    organization: organization._id,
+    options: "mi",
+  };
+  await createKeywords(emptyKeywords);
   res.status(200).end();
 })
 
@@ -250,12 +258,18 @@ app.get("/api/project-reports/cards-feedbacks", async (req, res) => {
   const startDay = new Date(parseInt(req.query.startDay));
   const endDay = new Date(parseInt(req.query.endDay));
   const projectId = req.query.projectId;
+  const organization = req.query.organization;
   console.log("getting cards and feedbacks");
   const queryResult = await getCurrentCardsAndFeedbacks(startDay, endDay, projectId);
   const currentCards = personReportsToFeedbacks(queryResult);
+  const keywords = await getAllKeywords(organization);
+  const regexes = keywords.keywords.map(
+    (keyword) => new RegExp(keyword, keywords.options)
+  );
+  const currentSummarized = await summarization(currentCards, regexes);
   const planedCards = await getPlanedProjectCards(endDay, projectId);
   res.status(200).json({
-    currentCards: currentCards,
+    currentCards: currentSummarized,
     planedCards: planedCards
   }).end();
 })
@@ -277,6 +291,18 @@ app.delete("/api/project-report", async (req, res) => {
   const result = await deleteProjectReport(reportId);
   res.status(200).json(result).end();
 });
+
+app.post("/api/keywords", async (req, res) => {
+  const keywords = req.body.keywords;
+  const organization = req.body.organization;
+  console.log(keywords);
+  console.log(organization);
+  const regexes = await createRegexes(keywords);
+  console.log(regexes);
+  const result = regexes;
+  await updateKeywords({organization: organization, keywords: regexes});
+  res.status(200).json(result).end();
+})
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {

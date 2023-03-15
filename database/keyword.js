@@ -20,6 +20,7 @@ const getAllKeywords = async (organization) => {
 }
 
 const createKeywordsFromJSON = async (data) => {
+  // console.log(keywords.keywords);
   const keyword = new Keywords({
     _id: new mongoose.Types.ObjectId(),
     keywords: keywords.keywords,

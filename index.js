@@ -7,7 +7,7 @@ const { getAuth } = require("firebase-admin/auth");
 const {createOrganization, findUserInOrganizations, getUsersInOrganization, addUserToOrganization} = require("./database/organization");
 const {createUser, updateUser, deleteUser} = require("./database/user");
 const {getCompanyProjects, getUserProjects, getUsersInProject, createProject, updateProject, deleteProject} = require("./database/project");
-const {getAllNewUserReports, getLastUserReport, getPlanedCustomFeedbacks, createPersonalReport, createNewPersonalReport, updatePersonalReport, updateNewPersonalReport, deletePersonalReport} = require("./database/personal-report");
+const {getAllNewUserReports, getLastUserReport, getPlanedCustomFeedbacks, getOwnFeedbacks, createPersonalReport, createNewPersonalReport, updatePersonalReport, updateNewPersonalReport, deletePersonalReport} = require("./database/personal-report");
 const {getAllProjectCards, getAllCurrentUserCards, getAllUserCardsForTommorow, getCurrentCardsAndFeedbacks, getPlanedProjectCards, createCard, updateCard, deleteCard} = require("./database/card");
 const {getAllProjectReports, getAllOrganizationReports, createProjectReport, updateProjectReport, deleteProjectReport} = require("./database/project-report.js");
 const {personReportsToFeedbacks} = require("./database/transformations.js");
@@ -28,6 +28,7 @@ app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 app.post("/api/auth", async (req, res) => {
+  console.log("in auth");
   const idToken = req.body.idToken;
   getAuth()
     .verifyIdToken(idToken)
@@ -268,9 +269,11 @@ app.get("/api/project-reports/cards-feedbacks", async (req, res) => {
   );
   const currentSummarized = await summarization(currentCards, regexes);
   const planedCards = await getPlanedProjectCards(endDay, projectId);
+  const ownFeedbacks = await getOwnFeedbacks(startDay, endDay, projectId);
   res.status(200).json({
     currentCards: currentSummarized,
-    planedCards: planedCards
+    planedCards: planedCards,
+    ownFeedbacks: ownFeedbacks,
   }).end();
 })
 

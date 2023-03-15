@@ -32,7 +32,8 @@ const summarizeByTemplate = async (feedbacks) => {
       );
       templatesSum[i]["result"] = Math.round(Number(sum) / templatesSum[i]["feedbacks"].length * 10)/10;
     }else{
-      // removing duplicated strings
+      // removing duplicated and empty strings
+      templatesSum[i]["feedbacks"] = templatesSum[i]["feedbacks"].filter(string => string);
       templatesSum[i]["feedbacks"] = Array.from(new Set(templatesSum[i]["feedbacks"]));
       templatesSum[i]["result"] = templatesSum[i]["feedbacks"].join(", ")
     }

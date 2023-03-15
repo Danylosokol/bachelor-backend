@@ -35,6 +35,24 @@ const getPlanedCustomFeedbacks = async (userId) => {
   return customFeedbacks
 }
 
+const getOwnFeedbacks = async (startDay, endDay, projectId) => {
+  console.log(startDay);
+  console.log(endDay);
+  console.log(new mongoose.Types.ObjectId(projectId));
+  const reports = await PersonalReport.find({
+    $and: [
+      { "feedbacks.card": undefined },
+      { date: { $gte: startDay, $lte: endDay } },
+    ],
+  }).populate({path: "user"}).exec();
+  console.log(reports);
+  const ownFeedbacks = reports.flatMap(report => report.feedbacks
+    .filter(feedback => feedback.card === undefined && feedback.project == projectId)
+    .map(feedback => ({...feedback._doc, user: report.user}))
+  );
+  return ownFeedbacks;
+}
+
 const createPersonalReport = async (data) => {
   console.log(data.tasks);
   const personalReport = new PersonalReport({
@@ -85,6 +103,7 @@ module.exports = {
   getAllNewUserReports,
   getLastUserReport,
   getPlanedCustomFeedbacks,
+  getOwnFeedbacks,
   createPersonalReport,
   createNewPersonalReport,
   updatePersonalReport,

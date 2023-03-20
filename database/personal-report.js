@@ -9,9 +9,46 @@ mongoose.connect(process.env["MONGO_URI"], {
   dbName: "bachelor-project",
 });
 
-// const getAllUserReports = async (userId) => {
-//   return PersonalReport.find({ user: userId }).populate({path: "tasks.project"}).exec();
-// };
+const getAllPersonalReports = async (organizationId) => {
+  return PersonalReport.find({ organization: organizationId })
+    .populate({path: "user"})
+    .populate({ path: "feedbacks.card" })
+    .populate({ path: "feedbacks.project" })
+    .exec();
+};
+
+const getAllPersonalReportsByDate = async (date, organizationId) => {
+  const dateObj = new Date(date);
+  console.log(dateObj);
+  const startOfDay = new Date(
+    dateObj.getFullYear(),
+    dateObj.getMonth(),
+    dateObj.getDate(),
+    0,
+    0,
+    0,
+    0
+  );
+  const endOfDay = new Date(
+    dateObj.getFullYear(),
+    dateObj.getMonth(),
+    dateObj.getDate(),
+    23,
+    59,
+    59,
+    999
+  );
+  return PersonalReport.find({
+    $and: [
+      { organization: organizationId },
+      { date: { $gte: startOfDay, $lte: endOfDay } },
+    ],
+  })
+    .populate({ path: "user" })
+    .populate({ path: "feedbacks.card" })
+    .populate({ path: "feedbacks.project" })
+    .exec();
+};
 
 const getAllNewUserReports = async (userId) => {
   return PersonalReport.find({ user: userId })
@@ -19,21 +56,29 @@ const getAllNewUserReports = async (userId) => {
     .populate({ path: "feedbacks.project" })
     .sort({ date: -1 })
     .exec();
-}
+};
 
 const getLastUserReport = async (userId) => {
   return PersonalReport.findOne({ user: userId })
     .sort({ date: -1 })
     .populate({ path: "tasks.project" })
     .exec();
-}
+};
 // Get from collection last personal report based on userId, and from that report extract only array of feedbacks and filter that array so it will have only objects that has no atribute card.
 const getPlanedCustomFeedbacks = async (userId) => {
-  const lastReport = await PersonalReport.findOne({user: userId}).sort({date: -1});
+  const lastReport = await PersonalReport.findOne({ user: userId }).sort({
+    date: -1,
+  });
   // feedbacks with null cards are not custom, but their card was deleted after feedback creation
-  const customFeedbacks = lastReport && lastReport.feedbacks ? lastReport.feedbacks.filter((feedback) => feedback.card === undefined && feedback.type === "planed") : [];
-  return customFeedbacks
-}
+  const customFeedbacks =
+    lastReport && lastReport.feedbacks
+      ? lastReport.feedbacks.filter(
+          (feedback) =>
+            feedback.card === undefined && feedback.type === "planed"
+        )
+      : [];
+  return customFeedbacks;
+};
 
 const getOwnFeedbacks = async (startDay, endDay, projectId) => {
   console.log(startDay);
@@ -44,14 +89,20 @@ const getOwnFeedbacks = async (startDay, endDay, projectId) => {
       { "feedbacks.card": undefined },
       { date: { $gte: startDay, $lte: endDay } },
     ],
-  }).populate({path: "user"}).exec();
+  })
+    .populate({ path: "user" })
+    .exec();
   console.log(reports);
-  const ownFeedbacks = reports.flatMap(report => report.feedbacks
-    .filter(feedback => feedback.card === undefined && feedback.project == projectId)
-    .map(feedback => ({...feedback._doc, user: report.user}))
+  const ownFeedbacks = reports.flatMap((report) =>
+    report.feedbacks
+      .filter(
+        (feedback) =>
+          feedback.card === undefined && feedback.project == projectId
+      )
+      .map((feedback) => ({ ...feedback._doc, user: report.user }))
   );
   return ownFeedbacks;
-}
+};
 
 const createPersonalReport = async (data) => {
   console.log(data.tasks);
@@ -83,7 +134,7 @@ const updatePersonalReport = async (data) => {
     tasks: [...data.tasks],
   };
   return PersonalReport.findByIdAndUpdate(data._id, updatedReport).exec();
-}
+};
 
 const updateNewPersonalReport = async (data) => {
   const updatedReport = {
@@ -94,12 +145,13 @@ const updateNewPersonalReport = async (data) => {
   return PersonalReport.findByIdAndUpdate(data._id, updatedReport).exec();
 };
 
-
 const deletePersonalReport = async (reportId) => {
   return PersonalReport.findByIdAndDelete(reportId);
-}
+};
 
 module.exports = {
+  getAllPersonalReports,
+  getAllPersonalReportsByDate,
   getAllNewUserReports,
   getLastUserReport,
   getPlanedCustomFeedbacks,

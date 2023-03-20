@@ -5,6 +5,8 @@ const projectReportSchema = new Schema(
   {
     _id: mongoose.Schema.Types.ObjectId,
     date: { type: Date },
+    startDay: { type: Date },
+    endDay: { type: Date },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     project: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },
     organization: { type: mongoose.Schema.Types.ObjectId, ref: "Organization" },
@@ -14,9 +16,9 @@ const projectReportSchema = new Schema(
         result: { type: String },
         links: [
           {
-            url: {type: String},
-            title: {type: String},
-          }
+            url: { type: String },
+            title: { type: String },
+          },
         ],
         feedbacks: [
           {
@@ -45,6 +47,23 @@ const projectReportSchema = new Schema(
       },
     ],
     planedCards: [{ type: mongoose.Schema.Types.ObjectId, ref: "Card" }],
+    ownFeedbacks: [
+      {
+        id: { type: String },
+        name: { type: String },
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+        description: { type: String },
+        feedback: { type: String },
+        links: [
+          {
+            url: { type: String },
+            title: { type: String },
+          },
+        ],
+        project: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },
+        rating: { type: String },
+      },
+    ],
   },
   {
     collection: "project-reports",

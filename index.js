@@ -7,7 +7,19 @@ const { getAuth } = require("firebase-admin/auth");
 const {createOrganization, findUserInOrganizations, getUsersInOrganization, addUserToOrganization} = require("./database/organization");
 const {createUser, updateUser, deleteUser} = require("./database/user");
 const {getCompanyProjects, getUserProjects, getUsersInProject, createProject, updateProject, deleteProject} = require("./database/project");
-const {getAllNewUserReports, getLastUserReport, getPlanedCustomFeedbacks, getOwnFeedbacks, createPersonalReport, createNewPersonalReport, updatePersonalReport, updateNewPersonalReport, deletePersonalReport} = require("./database/personal-report");
+const {
+  getAllPersonalReports, 
+  getAllPersonalReportsByDate,
+  getAllNewUserReports,
+  getLastUserReport,
+  getPlanedCustomFeedbacks,
+  getOwnFeedbacks,
+  createPersonalReport,
+  createNewPersonalReport,
+  updatePersonalReport,
+  updateNewPersonalReport,
+  deletePersonalReport,
+} = require("./database/personal-report");
 const {getAllProjectCards, getAllCurrentUserCards, getAllUserCardsForTommorow, getCurrentCardsAndFeedbacks, getPlanedProjectCards, createCard, updateCard, deleteCard} = require("./database/card");
 const {getAllProjectReports, getAllOrganizationReports, createProjectReport, updateProjectReport, deleteProjectReport} = require("./database/project-report.js");
 const {personReportsToFeedbacks} = require("./database/transformations.js");
@@ -141,10 +153,29 @@ app.delete("/api/project", async (req, res) => {
 });
 
 app.get("/api/new-person-reports", async (req, res) => {
-  if (req.query.userId) {
+  if (req.query.userId && req.query.userId !== "all") {
     const userId = req.query.userId;
     console.log(userId);
     const result = await getAllNewUserReports(userId);
+    console.log(result);
+    res.status(200).json(result).end();
+  } else if (
+    req.query.userId &&
+    req.query.userId === "all" &&
+    req.query.organizationId
+  ) {
+    const organizationId = req.query.organizationId;
+    console.log(organizationId);
+    const result = await getAllPersonalReports(organizationId);
+    console.log(result);
+    res.status(200).json(result).end();
+  }else if(req.query.date && req.query.organizationId){
+    console.log("date");
+    console.log(req.query.date);
+    const result = await getAllPersonalReportsByDate(
+      req.query.date,
+      req.query.organizationId
+    );
     console.log(result);
     res.status(200).json(result).end();
   }
@@ -285,8 +316,10 @@ app.post("/api/project-report", async (req, res) => {
 
 app.put("/api/project-report", async (req, res) => {
   const newReport = req.body;
+  // console.log(newReport.resultCards);
   const result = await updateProjectReport(newReport);
   res.status(200).json(result).end();
+  // res.status(200).end();
 });
 
 app.delete("/api/project-report", async (req, res) => {

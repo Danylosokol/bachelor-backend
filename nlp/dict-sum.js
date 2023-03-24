@@ -14,6 +14,7 @@ const summarizeWithoutTemplates = async (feedbacks, regexes) => {
     sentences.forEach((sentence) => {
       for (let j in regexes) {
         if (regexes[j].test(sentence)) {
+          console.log("Matched:");
           console.log(sentence);
           console.log(regexes[j]);
           matchedSentences.push(sentence);
@@ -38,7 +39,7 @@ const summarizeWithoutTemplates = async (feedbacks, regexes) => {
     }
   }
   const result = {
-    result: resultArr.join("\n"),
+    result: resultArr.join("\n\n"),
     unmatchedFeedbacks: unmatchedFeedbacks,
   }
   return result;

@@ -1,7 +1,7 @@
 require("dotenv").config();
 const mongoose = require("mongoose");
-let {Card} = require("../models/Card");
-let {PersonalReport} = require("../models/PersonalReport");
+let { Card } = require("../models/Card");
+let { PersonalReport } = require("../models/PersonalReport");
 
 mongoose.set("strictQuery", false);
 mongoose.connect(process.env["MONGO_URI"], {
@@ -13,57 +13,94 @@ mongoose.connect(process.env["MONGO_URI"], {
 const getAllProjectCards = async (projectId) => {
   return Card.find({ project: projectId })
     .populate({ path: "project" })
-    .populate({path: "owners"})
-    .populate({path: "createdBy"})
+    .populate({ path: "owners" })
+    .populate({ path: "createdBy" })
     .exec();
 };
 
 const getAllCurrentUserCards = async (userId, today) => {
   const currentTime = new Date(today);
-  const startOfToday = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate());
+  const startOfToday = new Date(
+    currentTime.getFullYear(),
+    currentTime.getMonth(),
+    currentTime.getDate()
+  );
   console.log("Start of the day");
   console.log(startOfToday);
-  const endOfToday = new Date(currentTime.getFullYear(), currentTime.getMonth(), currentTime.getDate() + 1);
+  const endOfToday = new Date(
+    currentTime.getFullYear(),
+    currentTime.getMonth(),
+    currentTime.getDate() + 1
+  );
   console.log("End of the day");
   console.log(endOfToday);
   const currentWeekDay = new Date(today).getDay();
-  return Card.find({$or: [
-    {type: "one-time", deadline: {$gte: startOfToday, $lt: endOfToday}}, 
-    {type: "recurring", startDay: {$lt: endOfToday}, pattern: currentWeekDay}
-  ]}).exec();
-}
-
-const getAllUserCardsForTommorow = async (userId, today) => {
-  const date = new Date(today);
-  const tommorow = new Date(date.setDate(date.getDate() + 1));
-  console.log(tommorow);
-  const startOfTommorow = new Date(
-    tommorow.getFullYear(),
-    tommorow.getMonth(),
-    tommorow.getDate()
-  );
-  const endOfTommorow = new Date(
-    tommorow.getFullYear(),
-    tommorow.getMonth(),
-    tommorow.getDate() + 1
-  );
-  const tommorowWeekDay = new Date(today).getDay();
   return Card.find({
-    $or: [
+    $and: [
       {
-        type: "one-time",
-        deadline: { $gte: startOfTommorow, $lt: endOfTommorow },
+        $or: [
+          {
+            type: "one-time",
+            deadline: { $gte: startOfToday, $lt: endOfToday },
+          },
+          {
+            type: "recurring",
+            startDay: { $lt: endOfToday },
+            pattern: currentWeekDay,
+          },
+        ]
       },
-      {
-        type: "recurring",
-        startDay: { $lt: endOfTommorow },
-        pattern: tommorowWeekDay,
-      },
+      { owners: { $in: [userId] } },
     ],
   }).exec();
-}
+};
 
-const getCurrentCardsAndFeedbacks = async (startDay, endDay, projectId) => {  
+const getAllUserCardsForNextDay = async (userId, today) => {
+  const date = new Date(today);
+  let targetDate = new Date(date);
+  const dayOfWeek = date.getDay();
+
+  // If today is Monday - Thursday, target date is tomorrow
+  if (dayOfWeek !== 5) {
+    targetDate.setDate(date.getDate() + 1);
+  }
+  // If today is Friday, target date is Monday
+  else if (dayOfWeek === 5) {
+    targetDate.setDate(date.getDate() + 3);
+  }
+
+  const startOfTargetDay = new Date(
+    targetDate.getFullYear(),
+    targetDate.getMonth(),
+    targetDate.getDate()
+  );
+  const endOfTargetDay = new Date(
+    targetDate.getFullYear(),
+    targetDate.getMonth(),
+    targetDate.getDate() + 1
+  );
+
+  return Card.find({
+    $and: [
+      {
+        $or: [
+          {
+            type: "one-time",
+            deadline: { $gte: startOfTargetDay, $lt: endOfTargetDay },
+          },
+          {
+            type: "recurring",
+            startDay: { $lt: endOfTargetDay },
+            pattern: targetDate.getDay(),
+          },
+        ],
+      },
+      { owners: { $in: [userId] } },
+    ],
+  }).exec();
+};
+
+const getCurrentCardsAndFeedbacks = async (startDay, endDay, projectId) => {
   let cards = await Card.aggregate([
     {
       $match: {
@@ -109,7 +146,6 @@ const getCurrentCardsAndFeedbacks = async (startDay, endDay, projectId) => {
                 {
                   date: { $gte: startDay, $lte: endDay },
                 },
-                
               ],
             },
           },
@@ -130,10 +166,7 @@ const getCurrentCardsAndFeedbacks = async (startDay, endDay, projectId) => {
                         ],
                       },
                       {
-                        $eq: [
-                          "current",
-                          "$$feedback.type",
-                        ],
+                        $eq: ["current", "$$feedback.type"],
                       },
                     ],
                   },
@@ -151,7 +184,7 @@ const getCurrentCardsAndFeedbacks = async (startDay, endDay, projectId) => {
     model: "User",
   });
   return [...cards];
-}
+};
 
 const getPlanedProjectCards = async (endDay, projectId) => {
   return Card.find({
@@ -159,16 +192,16 @@ const getPlanedProjectCards = async (endDay, projectId) => {
       {
         type: "one-time",
         deadline: { $gte: endDay },
-        project: new mongoose.Types.ObjectId(projectId)
+        project: new mongoose.Types.ObjectId(projectId),
       },
       {
         type: "recurring",
         startDay: { $lt: endDay },
-        project: new mongoose.Types.ObjectId(projectId)
+        project: new mongoose.Types.ObjectId(projectId),
       },
     ],
   }).exec();
-}
+};
 
 const createCard = async (data) => {
   const card = new Card({
@@ -187,7 +220,7 @@ const createCard = async (data) => {
     organization: data.organization,
   });
   return card.save();
-}
+};
 
 const updateCard = async (data) => {
   const updatedCard = {
@@ -201,17 +234,17 @@ const updateCard = async (data) => {
     pattern: [...data.pattern],
     owners: [...data.owners],
   };
-  return Card.findByIdAndUpdate(data._id, updatedCard, {new: true}).exec();
-}
+  return Card.findByIdAndUpdate(data._id, updatedCard, { new: true }).exec();
+};
 
 const deleteCard = async (cardId) => {
   return Card.findByIdAndDelete(cardId).exec();
-}
+};
 
 module.exports = {
   getAllProjectCards,
   getAllCurrentUserCards,
-  getAllUserCardsForTommorow,
+  getAllUserCardsForNextDay,
   getCurrentCardsAndFeedbacks,
   getPlanedProjectCards,
   createCard,

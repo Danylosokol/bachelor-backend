@@ -14,9 +14,8 @@ mongoose.connect(process.env["MONGO_URI"], {
 
 const getAllKeywords = async (organization) => {
   console.log(organization);
-  return Keywords.findOne(
-    { organization: organization }
-  ).exec();
+  const keywords = await Keywords.find().exec();
+  return keywords[0];
 }
 
 const createKeywordsFromJSON = async (data) => {
@@ -40,19 +39,20 @@ const createKeywords = async (data) => {
   return keyword.save();
 }
 
-const updateKeywords = async (data) => {
-  return Keywords.findOneAndUpdate({organization: data.organization}, {"$push": {"keywords": {"$each": data.keywords}}}, { new: true }).exec();
-};
+// const updateKeywords = async (data) => {
+//   return Keywords.findOneAndUpdate({organization: data.organization}, {"$push": {"keywords": {"$each": data.keywords}}}, { new: true }).exec();
+// };
 
-const deleteKeywords = async (organizationId) => {
-  return Keywords.findOneAndDelete({organization: organizationId}).exec();
-};
+// const deleteKeywords = async (organizationId) => {
+//   return Keywords.findOneAndDelete({organization: organizationId}).exec();
+// };
 
-// createKeywordsFromJSON({ organization: "63cd59483830bca2dc422a40", options: "mi" });
+// createKeywordsFromJSON({
+//   organization: "64175f98c2f876f7a823224c",
+//   options: "mi",
+// });
 
 module.exports = {
   getAllKeywords,
   createKeywords,
-  updateKeywords,
-  deleteKeywords,
 };

@@ -66,9 +66,13 @@ const getLastUserReport = async (userId) => {
 };
 // Get from collection last personal report based on userId, and from that report extract only array of feedbacks and filter that array so it will have only objects that has no atribute card.
 const getPlanedCustomFeedbacks = async (userId) => {
-  const lastReport = await PersonalReport.findOne({ user: userId }).sort({
-    date: -1,
-  });
+  const lastReport = await PersonalReport.findOne({ user: userId })
+    .populate({ path: "user" })
+    .populate({ path: "feedbacks.card" })
+    .populate({ path: "feedbacks.project" })
+    .sort({
+      date: -1,
+    });
   // feedbacks with null cards are not custom, but their card was deleted after feedback creation
   const customFeedbacks =
     lastReport && lastReport.feedbacks

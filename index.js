@@ -20,7 +20,16 @@ const {
   updateNewPersonalReport,
   deletePersonalReport,
 } = require("./database/personal-report");
-const {getAllProjectCards, getAllCurrentUserCards, getAllUserCardsForTommorow, getCurrentCardsAndFeedbacks, getPlanedProjectCards, createCard, updateCard, deleteCard} = require("./database/card");
+const {
+  getAllProjectCards,
+  getAllCurrentUserCards,
+  getAllUserCardsForNextDay,
+  getCurrentCardsAndFeedbacks,
+  getPlanedProjectCards,
+  createCard,
+  updateCard,
+  deleteCard,
+} = require("./database/card");
 const {getAllProjectReports, getAllOrganizationReports, createProjectReport, updateProjectReport, deleteProjectReport} = require("./database/project-report.js");
 const {personReportsToFeedbacks} = require("./database/transformations.js");
 const {summarization} = require("./nlp/summarization.js");
@@ -240,7 +249,7 @@ app.get("/api/cards", async (req, res) => {
     const date = req.query.date;
     const currentCards = await getAllCurrentUserCards(userId, date);
     console.log(currentCards);
-    const planedCards = await getAllUserCardsForTommorow(userId, date);
+    const planedCards = await getAllUserCardsForNextDay(userId, date);
     console.log(planedCards);
     const planedCustomFeedbacks = await getPlanedCustomFeedbacks(userId);
     res.status(200).json({"currentCards": currentCards, "planedCards": planedCards, "planedCustomFeedbacks": planedCustomFeedbacks}).end();
@@ -294,7 +303,8 @@ app.get("/api/project-reports/cards-feedbacks", async (req, res) => {
   console.log("getting cards and feedbacks");
   const queryResult = await getCurrentCardsAndFeedbacks(startDay, endDay, projectId);
   const currentCards = personReportsToFeedbacks(queryResult);
-  const keywords = await getAllKeywords(organization);
+  const keywords = await getAllKeywords();
+  console.log(keywords);
   const regexes = keywords.keywords.map(
     (keyword) => new RegExp(keyword, keywords.options)
   );

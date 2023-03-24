@@ -16,7 +16,7 @@ const getCompanyProjects = async (organisationId) => {
 };
 
 const getUserProjects = async (userId) => {
-  return Project.find({"members": userId}).exec();
+  return Project.find({ members: userId }).populate({ path: "members" }).exec();
 }
 
 const getUsersInProject = async (id) => {

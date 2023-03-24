@@ -37,7 +37,7 @@ const summarizeByTemplate = async (feedbacks) => {
       templatesSum[i]["feedbacks"] = Array.from(new Set(templatesSum[i]["feedbacks"]));
       templatesSum[i]["result"] = templatesSum[i]["feedbacks"].join(", ")
     }
-    result = `${result} ${templatesSum[i]["name"]}: ${templatesSum[i]["result"]};`;
+    result = `${result}${templatesSum[i]["name"]}: ${templatesSum[i]["result"]}; \n\n`;
   }
   result = result.trim();
   // console.log(result);

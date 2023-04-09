@@ -7,6 +7,7 @@ const cardSchema = new Schema(
     name: { type: String },
     description: { type: String },
     project: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },
+    createDate: {type: Date, default: Date.now},
     links: [
       {
         url: { type: String },
@@ -18,8 +19,8 @@ const cardSchema = new Schema(
       type: {type: String},
       action: {type: String},
     }],
-    startDay: { type: Date },
-    deadline: { type: Date },
+    startDate: { type: Date },
+    endDate: { type: Date },
     type: { type: String },
     pattern: [{ type: String }],
     owners: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],

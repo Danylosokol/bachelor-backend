@@ -1,7 +1,5 @@
 require("dotenv").config();
 const mongoose = require("mongoose");
-let { User } = require("../models/User");
-let { Organization } = require("../models/Organization");
 let { Project } = require("../models/Project");
 
 mongoose.set("strictQuery", false);

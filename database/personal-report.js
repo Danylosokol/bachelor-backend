@@ -84,14 +84,21 @@ const getPlanedCustomFeedbacks = async (userId) => {
   return customFeedbacks;
 };
 
-const getOwnFeedbacks = async (startDay, endDay, projectId) => {
-  console.log(startDay);
-  console.log(endDay);
-  console.log(new mongoose.Types.ObjectId(projectId));
+const getOwnFeedbacks = async (startTimeStamp, endTimeStamp, projectId) => {
+  const startDate = new Date(startTimeStamp);
+  const startDateUTC = new Date(
+    Date.UTC(startDate.getFullYear(), startDate.getMonth(), startDate.getDate())
+  );
+  const endDate = new Date(endTimeStamp);
+  const endDateUTC = new Date(
+    Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate())
+  );
+  startDateUTC.setUTCHours(0, 0, 0, 0);
+  endDateUTC.setUTCHours(23, 0, 0, 0);
   const reports = await PersonalReport.find({
     $and: [
       { "feedbacks.card": undefined },
-      { date: { $gte: startDay, $lte: endDay } },
+      { date: { $gte: startDateUTC, $lte: endDateUTC } },
     ],
   })
     .populate({ path: "user" })
@@ -101,7 +108,7 @@ const getOwnFeedbacks = async (startDay, endDay, projectId) => {
     report.feedbacks
       .filter(
         (feedback) =>
-          feedback.card === undefined && feedback.project == projectId
+          feedback.card === undefined && feedback.project == projectId && feedback.type === "current"
       )
       .map((feedback) => ({ ...feedback._doc, user: report.user }))
   );

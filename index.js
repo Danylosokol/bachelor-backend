@@ -248,9 +248,7 @@ app.get("/api/cards", async (req, res) => {
     const userId = req.query.userId;
     const date = req.query.date;
     const currentCards = await getAllCurrentUserCards(userId, date);
-    console.log(currentCards);
     const planedCards = await getAllUserCardsForNextDay(userId, date);
-    console.log(planedCards);
     const planedCustomFeedbacks = await getPlanedCustomFeedbacks(userId);
     res.status(200).json({"currentCards": currentCards, "planedCards": planedCards, "planedCustomFeedbacks": planedCustomFeedbacks}).end();
   }
@@ -268,6 +266,8 @@ app.post("/api/card", async (req, res) => {
 
 app.put("/api/card", async (req, res) => {
   const updatedCard = req.body;
+  console.log("Updated data about the card");
+  console.log(updatedCard);
   const result = await updateCard(updatedCard);
   const projectId = result.project;
   const updatedCards = await getAllProjectCards(projectId);
@@ -296,21 +296,28 @@ app.get("/api/project-reports", async (req, res) => {
 })
 
 app.get("/api/project-reports/cards-feedbacks", async (req, res) => {
-  const startDay = new Date(parseInt(req.query.startDay));
-  const endDay = new Date(parseInt(req.query.endDay));
+  const startTimeStamp = req.query.startDay;
+  const endTimeStamp = req.query.endDay;
   const projectId = req.query.projectId;
   const organization = req.query.organization;
   console.log("getting cards and feedbacks");
-  const queryResult = await getCurrentCardsAndFeedbacks(startDay, endDay, projectId);
+  const queryResult = await getCurrentCardsAndFeedbacks(
+    startTimeStamp,
+    endTimeStamp,
+    projectId
+  );
   const currentCards = personReportsToFeedbacks(queryResult);
   const keywords = await getAllKeywords();
-  console.log(keywords);
   const regexes = keywords.keywords.map(
     (keyword) => new RegExp(keyword, keywords.options)
   );
   const currentSummarized = await summarization(currentCards, regexes);
-  const planedCards = await getPlanedProjectCards(endDay, projectId);
-  const ownFeedbacks = await getOwnFeedbacks(startDay, endDay, projectId);
+  const planedCards = await getPlanedProjectCards(endTimeStamp, projectId);
+  const ownFeedbacks = await getOwnFeedbacks(
+    startTimeStamp,
+    endTimeStamp,
+    projectId
+  );
   res.status(200).json({
     currentCards: currentSummarized,
     planedCards: planedCards,

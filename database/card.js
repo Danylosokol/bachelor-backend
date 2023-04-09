@@ -19,21 +19,11 @@ const getAllProjectCards = async (projectId) => {
 };
 
 const getAllCurrentUserCards = async (userId, today) => {
-  const currentTime = new Date(today);
-  const startOfToday = new Date(
-    currentTime.getFullYear(),
-    currentTime.getMonth(),
-    currentTime.getDate()
+  const todayDate = new Date(today);
+  const todayDateUTC = new Date(
+    Date.UTC(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate())
   );
-  console.log("Start of the day");
-  console.log(startOfToday);
-  const endOfToday = new Date(
-    currentTime.getFullYear(),
-    currentTime.getMonth(),
-    currentTime.getDate() + 1
-  );
-  console.log("End of the day");
-  console.log(endOfToday);
+  console.log(todayDateUTC);
   const currentWeekDay = new Date(today).getDay();
   return Card.find({
     $and: [
@@ -41,57 +31,14 @@ const getAllCurrentUserCards = async (userId, today) => {
         $or: [
           {
             type: "one-time",
-            deadline: { $gte: startOfToday, $lt: endOfToday },
+            startDate: { $lte: todayDateUTC },
+            endDate: { $gte: todayDateUTC },
           },
           {
             type: "recurring",
-            startDay: { $lt: endOfToday },
+            startDate: { $lte: todayDateUTC },
+            endDate: { $gte: todayDateUTC },
             pattern: currentWeekDay,
-          },
-        ]
-      },
-      { owners: { $in: [userId] } },
-    ],
-  }).exec();
-};
-
-const getAllUserCardsForNextDay = async (userId, today) => {
-  const date = new Date(today);
-  let targetDate = new Date(date);
-  const dayOfWeek = date.getDay();
-
-  // If today is Monday - Thursday, target date is tomorrow
-  if (dayOfWeek !== 5) {
-    targetDate.setDate(date.getDate() + 1);
-  }
-  // If today is Friday, target date is Monday
-  else if (dayOfWeek === 5) {
-    targetDate.setDate(date.getDate() + 3);
-  }
-
-  const startOfTargetDay = new Date(
-    targetDate.getFullYear(),
-    targetDate.getMonth(),
-    targetDate.getDate()
-  );
-  const endOfTargetDay = new Date(
-    targetDate.getFullYear(),
-    targetDate.getMonth(),
-    targetDate.getDate() + 1
-  );
-
-  return Card.find({
-    $and: [
-      {
-        $or: [
-          {
-            type: "one-time",
-            deadline: { $gte: startOfTargetDay, $lt: endOfTargetDay },
-          },
-          {
-            type: "recurring",
-            startDay: { $lt: endOfTargetDay },
-            pattern: targetDate.getDay(),
           },
         ],
       },
@@ -100,7 +47,59 @@ const getAllUserCardsForNextDay = async (userId, today) => {
   }).exec();
 };
 
-const getCurrentCardsAndFeedbacks = async (startDay, endDay, projectId) => {
+const getAllUserCardsForNextDay = async (userId, today) => {
+  const todayDate = new Date(today);
+  const targetDateUTC = new Date(
+    Date.UTC(todayDate.getFullYear(), todayDate.getMonth(), todayDate.getDate())
+  );
+
+  const dayOfWeek = targetDateUTC.getDay();
+
+  if (dayOfWeek !== 5) {
+   targetDateUTC.setUTCDate(targetDateUTC.getDate() + 1);
+  }
+  else if (dayOfWeek === 5) {
+    targetDateUTC.setUTCDate(targetDateUTC.getDate() + 3);
+  }
+
+  return Card.find({
+    $and: [
+      {
+        $or: [
+          {
+            type: "one-time",
+            startDate: { $lte: targetDateUTC },
+            endDate: { $gte: targetDateUTC },
+          },
+          {
+            type: "recurring",
+            startDate: { $lte: targetDateUTC },
+            endDate: { $gte: targetDateUTC },
+            pattern: targetDateUTC.getDay(),
+          },
+        ],
+      },
+      { owners: { $in: [userId] } },
+    ],
+  }).exec();
+};
+
+const getCurrentCardsAndFeedbacks = async (startTimeStamp, endTimeStamp, projectId) => {
+  const startDate = new Date(startTimeStamp);
+  const startDateUTC = new Date(
+    Date.UTC(startDate.getFullYear(), startDate.getMonth(), startDate.getDate())
+  );
+  const endDate = new Date(endTimeStamp);
+  const endDateUTC = new Date(
+    Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate())
+  );
+  startDateUTC.setUTCHours(0, 0, 0, 0);
+  endDateUTC.setUTCHours(23, 0, 0, 0);
+  console.log(startDateUTC);
+  console.log(endDateUTC);
+  const uniqueDaysOfWeek = getUniqueDaysOfWeek(startDateUTC, endDateUTC);
+  console.log("UNIQUE DAYS OF WEEK:");
+  console.log(uniqueDaysOfWeek);
   let cards = await Card.aggregate([
     {
       $match: {
@@ -109,11 +108,14 @@ const getCurrentCardsAndFeedbacks = async (startDay, endDay, projectId) => {
             $or: [
               {
                 type: "one-time",
-                deadline: { $gte: startDay, $lte: endDay },
+                startDate: { $lte: endDateUTC },
+                endDate: { $gte: startDateUTC },
               },
               {
                 type: "recurring",
-                startDay: { $lte: endDay },
+                startDate: { $lte: endDateUTC },
+                endDate: { $gte: startDateUTC },
+                pattern: {$in: uniqueDaysOfWeek}
               },
             ],
           },
@@ -144,7 +146,7 @@ const getCurrentCardsAndFeedbacks = async (startDay, endDay, projectId) => {
                   },
                 },
                 {
-                  date: { $gte: startDay, $lte: endDay },
+                  date: { $gte: startDateUTC, $lte: endDateUTC },
                 },
               ],
             },
@@ -186,24 +188,42 @@ const getCurrentCardsAndFeedbacks = async (startDay, endDay, projectId) => {
   return [...cards];
 };
 
-const getPlanedProjectCards = async (endDay, projectId) => {
+const getPlanedProjectCards = async (endTimeStamp, projectId) => {
+  const endDate = new Date(endTimeStamp);
+  const endDateUTC = new Date(
+    Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate())
+  );
+  console.log(endDateUTC);
+  endDateUTC.setUTCHours(23, 0, 0, 0);
   return Card.find({
     $or: [
       {
-        type: "one-time",
-        deadline: { $gte: endDay },
+        endDate: { $gt: endDateUTC },
         project: new mongoose.Types.ObjectId(projectId),
-      },
-      {
-        type: "recurring",
-        startDay: { $lt: endDay },
-        project: new mongoose.Types.ObjectId(projectId),
-      },
+      }
     ],
   }).exec();
 };
 
 const createCard = async (data) => {
+  const startDate = new Date(data.startDate);
+  const endDate = new Date(data.endDate);
+  const startDateUTC = new Date(
+    Date.UTC(
+      startDate.getFullYear(),
+      startDate.getMonth(),
+      startDate.getDate()
+    )
+  );
+  const endDateUTC = new Date(
+    Date.UTC(
+      endDate.getFullYear(),
+      endDate.getMonth(),
+      endDate.getDate()
+    )
+  );
+  startDateUTC.setUTCHours(0, 0, 0, 0);
+  endDateUTC.setUTCHours(23, 0, 0, 0);
   const card = new Card({
     _id: new mongoose.Types.ObjectId(),
     name: data.name,
@@ -211,8 +231,8 @@ const createCard = async (data) => {
     project: data.project,
     links: [...data.links],
     templates: [...data.templates],
-    startDay: data.startDay,
-    deadline: data.deadline,
+    startDate: startDateUTC,
+    endDate: endDateUTC,
     type: data.type,
     pattern: [...data.pattern],
     owners: [...data.owners],
@@ -223,13 +243,27 @@ const createCard = async (data) => {
 };
 
 const updateCard = async (data) => {
+  const startDate = new Date(data.startDate);
+  console.log("Start day while updating:");
+  console.log(data.startDate);
+  const endDate = new Date(data.endDate);
+  console.log("end date while updating:");
+  console.log(data.endDate);
+  const startDateUTC = new Date(
+    Date.UTC(startDate.getFullYear(), startDate.getMonth(), startDate.getDate())
+  );
+  const endDateUTC = new Date(
+    Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate())
+  );
+  startDateUTC.setUTCHours(0, 0, 0, 0);
+  endDateUTC.setUTCHours(23, 0, 0, 0);
   const updatedCard = {
     name: data.name,
     description: data.description,
     links: [...data.links],
     templates: [...data.templates],
-    startDay: data.startDay,
-    deadline: data.deadline,
+    startDate: startDateUTC,
+    endDate: endDateUTC,
     type: data.type,
     pattern: [...data.pattern],
     owners: [...data.owners],
@@ -251,3 +285,14 @@ module.exports = {
   updateCard,
   deleteCard,
 };
+
+const getUniqueDaysOfWeek = (startDate, endDate) => {
+  const daysOfWeek = new Set();
+  let currentDate = new Date(startDate);
+  endDate = new Date(endDate);
+  while (currentDate <= endDate) {
+    daysOfWeek.add(currentDate.getUTCDay().toString());
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  return [...daysOfWeek];
+}

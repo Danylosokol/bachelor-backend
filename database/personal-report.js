@@ -50,7 +50,7 @@ const getAllPersonalReportsByDate = async (date, organizationId) => {
     .exec();
 };
 
-const getAllNewUserReports = async (userId) => {
+const getAllUserReports = async (userId) => {
   return PersonalReport.find({ user: userId })
     .populate({ path: "feedbacks.card" })
     .populate({ path: "feedbacks.project" })
@@ -116,18 +116,6 @@ const getOwnFeedbacks = async (startTimeStamp, endTimeStamp, projectId) => {
 };
 
 const createPersonalReport = async (data) => {
-  console.log(data.tasks);
-  const personalReport = new PersonalReport({
-    _id: new mongoose.Types.ObjectId(),
-    date: new Date(),
-    user: data.user,
-    organization: data.organization,
-    tasks: [...data.tasks],
-  });
-  return personalReport.save();
-};
-
-const createNewPersonalReport = async (data) => {
   const personalReport = new PersonalReport({
     _id: new mongoose.Types.ObjectId(),
     date: new Date(),
@@ -142,19 +130,13 @@ const updatePersonalReport = async (data) => {
   const updatedReport = {
     user: data.user,
     organization: data.organization,
-    tasks: [...data.tasks],
-  };
-  return PersonalReport.findByIdAndUpdate(data._id, updatedReport).exec();
-};
-
-const updateNewPersonalReport = async (data) => {
-  const updatedReport = {
-    user: data.user,
-    organization: data.organization,
     feedbacks: [...data.feedbacks],
   };
-  return PersonalReport.findByIdAndUpdate(data._id, updatedReport).exec();
+  return PersonalReport.findByIdAndUpdate(data._id, updatedReport, {
+    new: true,
+  }).exec();
 };
+
 
 const deletePersonalReport = async (reportId) => {
   return PersonalReport.findByIdAndDelete(reportId);
@@ -163,13 +145,11 @@ const deletePersonalReport = async (reportId) => {
 module.exports = {
   getAllPersonalReports,
   getAllPersonalReportsByDate,
-  getAllNewUserReports,
+  getAllUserReports,
   getLastUserReport,
   getPlanedCustomFeedbacks,
   getOwnFeedbacks,
   createPersonalReport,
-  createNewPersonalReport,
   updatePersonalReport,
-  updateNewPersonalReport,
   deletePersonalReport,
 };

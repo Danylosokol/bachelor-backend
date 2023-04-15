@@ -1,13 +1,5 @@
-const natural = require("natural");
 const nlp = require("compromise");
-const spelling = require("spelling");
-const dictionary = require("./dictionary");
 
-const stemmer = natural.PorterStemmer;
-const tokenizer = new natural.WordTokenizer();
-const dict = new spelling(dictionary);
-const verbInflector = new natural.PresentVerbInflector();
-const nounInflector = new natural.NounInflector();
 
 const createRegexes = async (input) => {
   const regexes = [];
@@ -116,8 +108,7 @@ const getAllVerbForms = (term) => {
       ? term.implicit.toLowerCase()
       : term.text.toLowerCase();
   }
-  const mistyped = getAllMistypedForms(word);
-  const wordForms = mistyped;
+  const wordForms = [];
   wordForms.push(word);
   const infinitive = nlp(word).verbs().toInfinitive().text().toLowerCase();
   if (infinitive) {
@@ -165,8 +156,7 @@ const getAllNounForms = (term) => {
       ? term.implicit.toLowerCase()
       : term.text.toLowerCase();
   }
-  const mistyped = getAllMistypedForms(word);
-  const wordForms = mistyped;
+  const wordForms = [];
   wordForms.push(word);
   if (nlp(word).nouns().isPlural().length) {
     const singular = nlp(word).nouns().toSingular().all().text().toLowerCase();
@@ -189,8 +179,7 @@ const getAllAdjectiveForms = (term) => {
     word = term;
   }
   word = term.normal ? term.normal.toLowerCase() : term.text.toLowerCase();
-  const mistyped = getAllMistypedForms(word);
-  const wordForms = mistyped;
+  const wordForms = [];
   wordForms.push(word);
   const comparative = nlp(word)
     .adjectives()
@@ -216,29 +205,6 @@ const getAllAdjectiveForms = (term) => {
   }
   const regex = `(${wordForms.join("|")})`;
   return regex;
-};
-
-const getAllMistypedForms = (word) => {
-  const forms = [];
-  // if(word.length > 1){
-  //   for (let i = 0; i < word.length; i++) {
-  //     const formWithoutLetter = word.slice(0, i) + word.slice(i + 1);
-  //     console.log(formWithoutLetter);
-  //     const resultWithoutLetter = dict.lookup(formWithoutLetter);
-  //     console.log(resultWithoutLetter);
-  //     if (!resultWithoutLetter.found) {
-  //       forms.push(formWithoutLetter);
-  //     }
-  //     const formWithDoubleLetter = word.slice(0, i) + word[i] + word.slice(i);
-  //     console.log(formWithDoubleLetter);
-  //     const resultWithDoubleLetter = dict.lookup(formWithDoubleLetter);
-  //     console.log(resultWithDoubleLetter);
-  //     if (!resultWithDoubleLetter.found) {
-  //       forms.push(formWithDoubleLetter);
-  //     }
-  //   }
-  // }
-  return forms;
 };
 
 module.exports = {

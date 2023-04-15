@@ -10,14 +10,12 @@ const {getCompanyProjects, getUserProjects, getUsersInProject, createProject, up
 const {
   getAllPersonalReports, 
   getAllPersonalReportsByDate,
-  getAllNewUserReports,
+  getAllUserReports,
   getLastUserReport,
   getPlanedCustomFeedbacks,
   getOwnFeedbacks,
   createPersonalReport,
-  createNewPersonalReport,
   updatePersonalReport,
-  updateNewPersonalReport,
   deletePersonalReport,
 } = require("./database/personal-report");
 const {
@@ -161,11 +159,11 @@ app.delete("/api/project", async (req, res) => {
   res.status(200).json(result).end();
 });
 
-app.get("/api/new-person-reports", async (req, res) => {
+app.get("/api/person-reports", async (req, res) => {
   if (req.query.userId && req.query.userId !== "all") {
     const userId = req.query.userId;
     console.log(userId);
-    const result = await getAllNewUserReports(userId);
+    const result = await getAllUserReports(userId);
     console.log(result);
     res.status(200).json(result).end();
   } else if (
@@ -195,13 +193,6 @@ app.post("/api/person-report", async (req, res) => {
   console.log(newReport);
   const result = await createPersonalReport(newReport);
   res.status(200).json(result).end();
-})
-
-app.post("/api/new-person-report", async (req, res) => {
-  const newReport = req.body;
-  console.log(newReport);
-  const result = await createNewPersonalReport(newReport);
-  res.status(200).json(result).end();
 });
 
 app.put("/api/person-report", async (req, res) => {
@@ -211,32 +202,11 @@ app.put("/api/person-report", async (req, res) => {
   res.status(200).json(result).end();
 });
 
-app.put("/api/new-person-report", async (req, res) => {
-  const updatedReport = req.body;
-  const result = await updateNewPersonalReport(updatedReport);
-  console.log(result);
-  res.status(200).json(result).end();
-});
-
 app.delete("/api/person-report", async (req, res) => {
   const reportId = req.query.reportId;
   console.log(reportId);
   const result = await deletePersonalReport(reportId);
   res.status(200).json(result).end();
-});
-
-app.get("/api/projects-tasks", async (req, res) => {
-  if (req.query.user) {
-    const userId = req.query.user;
-    const projects = await getUserProjects(userId);
-    const lastReport = await getLastUserReport(userId);
-    const planedTasks = lastReport.tasks.filter((task) => task.status === "toDo");
-    res.status(200).json({
-      projects: projects,
-      planedTasks: planedTasks
-    }).end();
-  }
-  res.status(500).end();
 });
 
 app.get("/api/cards", async (req, res) => {
@@ -288,18 +258,18 @@ app.get("/api/project-reports", async (req, res) => {
     const organizationId = req.query.organizationId;
     const result = await getAllOrganizationReports(organizationId);
     res.status(200).json(result).end();
-  }else{
+  }else if(projectId !== undefined && projectId !== null){
     const result = await getAllProjectReports(projectId);
     console.log(result);
     res.status(200).json(result).end();
   }
+  res.status(500).end();
 })
 
 app.get("/api/project-reports/cards-feedbacks", async (req, res) => {
   const startTimeStamp = req.query.startDay;
   const endTimeStamp = req.query.endDay;
   const projectId = req.query.projectId;
-  const organization = req.query.organization;
   console.log("getting cards and feedbacks");
   const queryResult = await getCurrentCardsAndFeedbacks(
     startTimeStamp,
@@ -332,11 +302,9 @@ app.post("/api/project-report", async (req, res) => {
 });
 
 app.put("/api/project-report", async (req, res) => {
-  const newReport = req.body;
-  // console.log(newReport.resultCards);
-  const result = await updateProjectReport(newReport);
+  const updatedReport = req.body;
+  const result = await updateProjectReport(updatedReport);
   res.status(200).json(result).end();
-  // res.status(200).end();
 });
 
 app.delete("/api/project-report", async (req, res) => {

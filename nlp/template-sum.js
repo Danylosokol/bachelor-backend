@@ -1,9 +1,7 @@
 const summarizeByTemplate = async (feedbacks) => {
-  // console.log(feedbacks);
   const templatesSum = [];
   for(let i in feedbacks){
     for(let j in feedbacks[i].templates){
-      // console.log(feedbacks[i].templates[j]);
       const indx = templatesSum.findIndex(
         (templ) => templ.name === feedbacks[i].templates[j]["name"]
       );
@@ -40,7 +38,6 @@ const summarizeByTemplate = async (feedbacks) => {
     result = `${result}${templatesSum[i]["name"]}: ${templatesSum[i]["result"]}; \n\n`;
   }
   result = result.trim();
-  // console.log(result);
   return result;
 }
 

@@ -6,7 +6,6 @@ const summarization = async (cards, regexes) => {
     if(card.templates && card.templates.length){
       card.result = await summarizeByTemplate(card.personalFeedbacks);
     }else{
-      console.log(card.name);
       const summarizationObj = await summarizeWithoutTemplates(card.personalFeedbacks, regexes);
       card.result = summarizationObj.result;
       card.unmatchedFeedbacks = summarizationObj.unmatchedFeedbacks;
@@ -18,7 +17,6 @@ const summarization = async (cards, regexes) => {
 }
 
 const summarizeLinks = (feedbacks) => {
-  // console.log(feedbakcs);
   const finalLinks = [];
   for(let i in feedbacks){
     for(let j in feedbacks[i].links){
@@ -28,7 +26,6 @@ const summarizeLinks = (feedbacks) => {
       }
     }
   }
-  console.log(finalLinks);
   return finalLinks;
 }
 

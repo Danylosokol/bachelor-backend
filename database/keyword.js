@@ -39,9 +39,9 @@ const createKeywords = async (data) => {
   return keyword.save();
 }
 
-// const updateKeywords = async (data) => {
-//   return Keywords.findOneAndUpdate({organization: data.organization}, {"$push": {"keywords": {"$each": data.keywords}}}, { new: true }).exec();
-// };
+const updateKeywords = async (data) => {
+  return Keywords.findOneAndUpdate({organization: data.organization}, {"$push": {"keywords": {"$each": data.keywords}}}, { new: true }).exec();
+};
 
 // const deleteKeywords = async (organizationId) => {
 //   return Keywords.findOneAndDelete({organization: organizationId}).exec();
@@ -55,4 +55,5 @@ const createKeywords = async (data) => {
 module.exports = {
   getAllKeywords,
   createKeywords,
+  updateKeywords,
 };

@@ -57,7 +57,9 @@ const updateProjectReport = async (data) => {
     resultCards: [...data.resultCards],
     planedCards: [...data.planedCards],
   };
-  return ProjectReport.findByIdAndUpdate(data._id, updatedProjectReport).exec();
+  return ProjectReport.findByIdAndUpdate(data._id, updatedProjectReport, {
+    new: true,
+  }).exec();
 };
 
 const deleteProjectReport = async (reportId) => {

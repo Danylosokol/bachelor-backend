@@ -31,6 +31,7 @@ const personReportSchema = new Schema(
         project: { type: mongoose.Schema.Types.ObjectId, ref: "Project" },
         rating: { type: String },
         type: { type: String },
+        visibility: {type: Boolean}
       },
     ],
   },

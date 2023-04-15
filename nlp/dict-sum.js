@@ -1,7 +1,5 @@
 const { SentenceTokenizer } = require("natural");
 const moment = require("moment");
-const fs = require("fs");
-const {getAllKeywords} = require("../database/keyword");
 
 const sentenceTokenizer = new SentenceTokenizer();
 
@@ -14,17 +12,11 @@ const summarizeWithoutTemplates = async (feedbacks, regexes) => {
     sentences.forEach((sentence) => {
       for (let j in regexes) {
         if (regexes[j].test(sentence)) {
-          console.log("Matched:");
-          console.log(sentence);
-          console.log(regexes[j]);
           matchedSentences.push(sentence);
           break;
         }
       }
     });
-    console.log(sentences);
-    console.log(matchedSentences);
-    console.log("---------------");
     let summarization = matchedSentences.join(" ");
     if (!summarization.length) {
       if (feedbacks[i]["feedback"]){

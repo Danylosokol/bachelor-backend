@@ -42,7 +42,9 @@ const updateProject = async (data) => {
     description: data.description,
     members: [...data.members],
   };
-  return Project.findByIdAndUpdate(data._id, updatedProject).exec();
+  return Project.findByIdAndUpdate(data._id, updatedProject, {
+    new: true,
+  }).exec();
 };
 
 const deleteProject = async (projectId) => {

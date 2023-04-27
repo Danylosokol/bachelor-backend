@@ -6,6 +6,8 @@ const createRegexes = async (input) => {
   for (i in input) {
     const doc = nlp(input[i]);
     const data = doc.json();
+    console.log("DAta:");
+    console.log(data);
     let regex = createRegex(data[0].terms);
     if (input[i].includes(" ")) {
       regex = diferentTimes(regex, input[i]);
@@ -206,6 +208,8 @@ const getAllAdjectiveForms = (term) => {
   const regex = `(${wordForms.join("|")})`;
   return regex;
 };
+
+createRegexes(["user-fiendly"]);
 
 module.exports = {
   createRegexes,

@@ -209,8 +209,6 @@ const getAllAdjectiveForms = (term) => {
   return regex;
 };
 
-createRegexes(["user-fiendly"]);
-
 module.exports = {
   createRegexes,
 };

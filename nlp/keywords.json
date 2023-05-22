@@ -8,7 +8,7 @@
     "(\\b)put\\s+together(\\b)",
     "(\\b)coordinate(d)?(\\b)",
     "(\\b)add(ed)?(\\b)",
-    "(\\b)reachs*out(s)?(\\b)",
+    "(\\b)reach(s)?(\\s+)?out(s)?(\\b)",
     "(\\b)responses\\s+rate(\\b)",
     "(\\b)review(ed)?(\\s+out)?(\\b)",
     "(\\b)(gave)|(give)(\\b)",
